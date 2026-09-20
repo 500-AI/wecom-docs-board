@@ -7,7 +7,7 @@ import json, os
 BASE = os.path.dirname(os.path.abspath(__file__))
 items = json.load(open(os.path.join(BASE, "data.json"), encoding="utf-8"))
 
-type_map = {"在线文档":"文档","在线表格":"表格","智能表格":"智能表","智能文档":"智能文档","脑图":"脑图","?":"其他"}
+type_map = {"在线文档":"文档","在线表格":"表格","智能表格":"智能表","智能文档":"智能文档","脑图":"脑图","PPT":"PPT","汇报":"汇报","收集表":"收集表","流程图":"流程图","?":"其他"}
 
 docs = []
 for i, d in enumerate(items):

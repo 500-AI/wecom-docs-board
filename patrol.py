@@ -12,10 +12,12 @@ CREATOR = "wokSFfCgAAuljY1JMO4dg5NUwzJhDB_w"  # 授权人 yasminwu
 KEYWORDS = ["周报","意图","评测","还款","免审","GEO","方案","分析","知识库","Agent",
             "客服","设计","名单","skill","Skill","数据","运营","规则","人群","看板",
             "复盘","会议","纪要","需求","产品","统计","信用卡","query","文档","测试",
-            "监控","上线","接入","内测","优惠","额度","外宣","公众号","推文","AI"]
+            "监控","上线","接入","内测","优惠","额度","外宣","公众号","推文","AI",
+            "PPT","汇报","演示","收集","流程"]
 
 RAW_TYPE = {"doc":"在线文档","sheet":"在线表格","smartsheet":"智能表格",
-            "smartpage":"智能文档","mind":"脑图","pdf":"PDF"}
+            "smartpage":"智能文档","mind":"脑图","pdf":"PDF",
+            "ppt":"PPT","journal":"汇报","collect":"收集表","flow":"流程图"}
 
 def search(kw, created_after=None):
     params = {"keywords":[kw],"creator_userids":[CREATOR],
