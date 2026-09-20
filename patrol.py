@@ -17,21 +17,31 @@ KEYWORDS = ["周报","意图","评测","还款","免审","GEO","方案","分析"
 RAW_TYPE = {"doc":"在线文档","sheet":"在线表格","smartsheet":"智能表格",
             "smartpage":"智能文档","mind":"脑图","pdf":"PDF"}
 
-def search(kw):
+def search(kw, created_after=None):
+    params = {"keywords":[kw],"creator_userids":[CREATOR],
+              "sort_by":"create_time","limit":30}
+    if created_after:
+        params["created_after"] = created_after  # 只查上次巡检之后新建的
     try:
         r = subprocess.run(
             ["wecom-cli","doc","search","--json",
-             json.dumps({"keywords":[kw],"creator_userids":[CREATOR],
-                         "sort_by":"create_time","limit":30}, ensure_ascii=False)],
+             json.dumps(params, ensure_ascii=False)],
             capture_output=True, text=True, timeout=45)
         return json.loads(r.stdout).get("docs", [])
     except Exception:
         return []  # 超时或解析失败的 keyword 跳过，不中断整轮巡检
 
 def main():
+    from datetime import datetime
+    meta_path = os.path.join(BASE, "patrol_meta.json")
+    last_run = None
+    if os.path.exists(meta_path):
+        try: last_run = json.load(open(meta_path, encoding="utf-8")).get("last_run")
+        except Exception: pass
+
     found = {}
     for kw in KEYWORDS:
-        for d in search(kw):
+        for d in search(kw, created_after=last_run):
             u = d.get("url")
             if u:
                 found[u] = d
@@ -52,10 +62,11 @@ def main():
     if new_docs:
         json.dump(items, open(DATA,"w",encoding="utf-8"), ensure_ascii=False, indent=2)
 
-    # 每天都写巡检元数据并重新生成页面（供前端首次打开弹窗使用）
-    from datetime import datetime
-    meta = {"date": datetime.now().strftime("%Y-%m-%d"), "new_count": len(new_docs)}
-    json.dump(meta, open(os.path.join(BASE,"patrol_meta.json"),"w",encoding="utf-8"), ensure_ascii=False)
+    # 每次都写巡检元数据（含本次时间窗）并重新生成页面
+    now = datetime.now()
+    meta = {"date": now.strftime("%Y-%m-%d"), "new_count": len(new_docs),
+            "last_run": now.strftime("%Y-%m-%d %H:%M:%S"), "window_from": last_run}
+    json.dump(meta, open(meta_path,"w",encoding="utf-8"), ensure_ascii=False)
     subprocess.run([sys.executable, os.path.join(BASE,"gen_board.py")], check=True)
 
     print(json.dumps({"scanned": len(found), "total": len(items),
