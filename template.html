@@ -197,7 +197,7 @@ main{flex:1 1 auto;position:relative;overflow:hidden}
   pointer-events:none;z-index:5;
 }
 
-#galleryView{
+#galleryView, #typeView{
   position:absolute;inset:0;
   overflow-y:auto;
   padding:28px 36px 40px;
@@ -473,6 +473,7 @@ body.show-hidden #hiddenSec{display:block}
     <div class="view-toggle">
       <button id="vFlow" class="on">展开视图</button>
       <button id="vGallery">画廊视图</button>
+      <button id="vType">类型视图</button>
     </div>
     <div class="spacer"></div>
     <button class="btn accent" id="btnSync">巡检更新</button>
@@ -500,6 +501,7 @@ body.show-hidden #hiddenSec{display:block}
     <div class="flow-hint">移动鼠标远离中轴 · 滚动速度随距离递增</div>
   </div>
   <div id="galleryView"><div class="gal-cols" id="galCols"></div></div>
+  <div id="typeView"><div class="gal-cols" id="typeCols"></div></div>
 </main>
 
 <div class="overlay" id="overlay"><div class="modal" id="modalBox"></div></div>
@@ -651,6 +653,38 @@ function renderGallery(){
   ).join("");
 }
 
+/* 类型视图：按文件类型分组，类型卡复用卡片样式但用灰色标识 */
+function typeCardHTML(t, list){
+  return `<div class="card type-card">
+    <div class="bar" style="background:linear-gradient(90deg,#8A9199,#C4C9CF)"></div>
+    <div class="c-head">
+      <div class="c-title" style="cursor:default">${esc(t)}</div>
+      <div class="c-meta"><span>${list.length} 篇</span></div>
+    </div>
+    <div class="c-body">${list.map(docRow).join("")}</div>
+  </div>`;
+}
+
+function renderTypes(){
+  const groups = {};
+  state.docs
+    .filter(d=>!d.hidden)
+    .filter(d=>!query || d.name.toLowerCase().includes(query))
+    .forEach(d=>{ (groups[d.type] = groups[d.type] || []).push(d); });
+  const order = Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length);
+  // 类型卡按篇数降序，放入当前最短列（≤4 列均衡）
+  const n = Math.min(4, Math.max(1, order.length));
+  const cols = Array.from({length:n},()=>({h:0,items:[]}));
+  order.forEach(t=>{
+    const list = groups[t].sort((a,b)=>b.date.localeCompare(a.date));
+    const c = cols.reduce((m,c)=>c.h<m.h?c:m, cols[0]);
+    c.items.push(typeCardHTML(t, list)); c.h += 140 + list.length * 28;
+  });
+  document.getElementById("typeCols").innerHTML = cols.map(c=>
+    `<div class="gal-col">${c.items.join("")}</div>`
+  ).join("");
+}
+
 function renderHidden(){
   const box = document.getElementById("hiddenBox");
   if(!state.showHidden){ box.innerHTML=""; return; }
@@ -673,11 +707,13 @@ function renderHidden(){
 function renderAll(){
   document.body.classList.toggle("show-hidden", !!state.showHidden);
   applyTheme();
-  renderStats(); renderUncat(); renderFlow(); renderGallery(); renderHidden();
+  renderStats(); renderUncat(); renderFlow(); renderGallery(); renderTypes(); renderHidden();
   document.getElementById("flowView").style.display = state.view==="flow" ? "block" : "none";
   document.getElementById("galleryView").style.display = state.view==="gallery" ? "block" : "none";
+  document.getElementById("typeView").style.display = state.view==="type" ? "block" : "none";
   document.getElementById("vFlow").classList.toggle("on", state.view==="flow");
   document.getElementById("vGallery").classList.toggle("on", state.view==="gallery");
+  document.getElementById("vType").classList.toggle("on", state.view==="type");
 }
 
 /* ---------- 展开视图：鼠标跟随滚动 ---------- */
@@ -724,6 +760,7 @@ document.addEventListener("click", e=>{
 /* ---------- 顶栏 ---------- */
 document.getElementById("vFlow").onclick = ()=>{ state.view="flow"; save(); renderAll(); };
 document.getElementById("vGallery").onclick = ()=>{ state.view="gallery"; save(); renderAll(); };
+document.getElementById("vType").onclick = ()=>{ state.view="type"; save(); renderAll(); };
 document.getElementById("searchInput").addEventListener("input", e=>{
   query = e.target.value.trim().toLowerCase(); renderAll();
 });
@@ -921,7 +958,7 @@ document.addEventListener("click", e=>{
 let dragPid = null;
 document.addEventListener("dragstart", e=>{
   const card = e.target.closest && e.target.closest(".card");
-  if(!card) return;
+  if(!card || !card.dataset.pid) return;
   dragPid = card.dataset.pid;
   card.classList.add("dragging");
   e.dataTransfer.effectAllowed = "move";
