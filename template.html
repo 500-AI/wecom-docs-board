@@ -730,14 +730,45 @@ document.getElementById("searchInput").addEventListener("input", e=>{
 document.getElementById("btnHidden").onclick = ()=>{ state.showHidden = !state.showHidden; save(); renderAll(); };
 document.getElementById("ucToggle").onclick = ()=>{ state.uncatOpen = !state.uncatOpen; save(); renderAll(); };
 
-document.getElementById("btnSync").onclick = ()=>{
-  const now = new Date();
-  const pad = n=>String(n).padStart(2,"0");
-  state.lastSync = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  save(); renderAll();
-  showCheer(0);  // 手动巡检弹出当前快照报告
-  state.lastSeenSync = state.lastSync.slice(0,10); save();
-  toast("静态页面无法直连企微 · 实时拉取请对笔记侠说「巡检一下」");
+document.getElementById("btnSync").onclick = async ()=>{
+  const btn = document.getElementById("btnSync");
+  btn.disabled = true; btn.textContent = "巡检中…";
+  try{
+    // 调用本机常驻巡检服务（launchd 保活），实时拉取企微新文档
+    const r = await fetch("http://127.0.0.1:8931/patrol", {method:"POST"});
+    const res = await r.json();
+    if(!res.ok) throw new Error(res.error || "巡检失败");
+
+    const typeMap = {"在线文档":"文档","在线表格":"表格","智能表格":"智能表",
+                     "智能文档":"智能文档","脑图":"脑图","PDF":"PDF"};
+    (res.new_docs || []).forEach(d=>{
+      state.docs.push({
+        id:"d"+Date.now()+Math.random().toString(36).slice(2,6),
+        name:d.name, type:typeMap[d.type]||d.type||"其他",
+        date:(d.create_time||"").slice(0,10) || new Date().toISOString().slice(0,10),
+        url:d.url, pid:null, hidden:false
+      });
+    });
+    const now = new Date();
+    const pad = n=>String(n).padStart(2,"0");
+    state.lastSync = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    state.lastSeenSync = state.lastSync.slice(0,10);
+    save(); renderAll();
+    showCheer(res.new_count || 0);
+    toast(res.pushed ? `巡检完成 · 用时 ${res.elapsed}s · 已同步线上`
+                     : `巡检完成 · 用时 ${res.elapsed}s · 无变更推送`);
+  }catch(e){
+    // 本地服务未启动时降级为快照报告
+    const now = new Date();
+    const pad = n=>String(n).padStart(2,"0");
+    state.lastSync = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    state.lastSeenSync = state.lastSync.slice(0,10);
+    save(); renderAll();
+    showCheer(0);
+    toast("本地巡检服务未启动 · 也可对笔记侠说「巡检一下」");
+  }finally{
+    btn.disabled = false; btn.textContent = "巡检更新";
+  }
 };
 
 document.getElementById("btnTheme").onclick = (e)=>{
