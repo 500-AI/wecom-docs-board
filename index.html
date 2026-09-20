@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文档索引 · 企微文档管理台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FFFFFF;
+  --paper-2:#F6F6F4;
+  --ink:#20242B;
+  --ink-2:#5A6068;
+  --ink-3:#9AA0A8;
+  --line:#E8E8E4;
+  --accent:#D96C2C;
+  --c-high:#D94336;
+  --c-high-soft:#F0735F;
+  --c-mid:#EFA03C;
+  --c-mid-soft:#F5C078;
+  --c-low:#3B6FD4;
+  --c-low-soft:#7B9BE0;
+  --serif:"Playfair Display","Noto Serif SC",Georgia,serif;
+  --sans:"Noto Sans SC","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono","SF Mono",Menlo,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+::selection{background:var(--accent);color:#fff}
+
+/* ---------- 顶部刊头 ---------- */
+header{
+  flex:0 0 auto;
+  padding:22px 36px 0;
+  border-bottom:1px solid var(--line);
+  background:var(--paper);
+  z-index:20;
+}
+.masthead{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:24px;
+  flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:16px}
+.brand h1{
+  font-family:var(--serif);
+  font-weight:600;
+  font-size:30px;
+  letter-spacing:.02em;
+}
+.brand .en{
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:400;
+  font-size:14px;
+  color:var(--ink-3);
+  letter-spacing:.08em;
+}
+.stats{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-2);
+  letter-spacing:.04em;
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.stats b{color:var(--ink);font-weight:500}
+.toolbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 0 14px;
+  flex-wrap:wrap;
+}
+.search{
+  font-family:var(--mono);
+  font-size:12px;
+  padding:6px 12px;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+  width:200px;
+  outline:none;
+}
+.search:focus{border-color:var(--ink-2)}
+.btn{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  padding:7px 14px;
+  border:1px solid var(--ink);
+  background:transparent;
+  color:var(--ink);
+  cursor:pointer;
+  transition:background .15s,color .15s;
+}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.accent{border-color:var(--accent);color:var(--accent)}
+.btn.accent:hover{background:var(--accent);color:#fff}
+.view-toggle{display:flex;border:1px solid var(--ink)}
+.view-toggle button{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  padding:7px 16px;
+  border:none;
+  background:transparent;
+  color:var(--ink-2);
+  cursor:pointer;
+}
+.view-toggle button.on{background:var(--ink);color:var(--paper)}
+.spacer{flex:1}
+
+/* ---------- 未分类 banner（默认折叠） ---------- */
+#uncat{
+  flex:0 0 auto;
+  border-bottom:1px solid var(--line);
+  background:var(--paper-2);
+  padding:10px 36px;
+}
+#uncat .uc-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.uc-toggle{
+  font-family:var(--mono);
+  font-size:10px;
+  width:20px;height:20px;
+  border:1px solid var(--ink-3);
+  background:transparent;
+  color:var(--ink-2);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  line-height:1;
+  padding:0;
+}
+.uc-toggle:hover{border-color:var(--ink);color:var(--ink)}
+#uncat .uc-title{
+  font-family:var(--serif);
+  font-size:16px;
+  font-weight:600;
+}
+#uncat .uc-note{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-3);
+  letter-spacing:.05em;
+}
+#uncat .uc-grid{
+  column-width:300px;
+  column-gap:28px;
+  margin-top:10px;
+  max-height:26vh;
+  overflow-y:auto;
+  display:none;
+}
+#uncat.open .uc-grid{display:block}
+
+/* ---------- 主视图区 ---------- */
+main{flex:1 1 auto;position:relative;overflow:hidden}
+
+#flowView{
+  position:absolute;inset:0;
+  overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;
+}
+#flowView::-webkit-scrollbar{display:none}
+.flow-track{
+  display:flex;align-items:flex-start;
+  gap:28px;
+  padding:28px 36px 40px;
+  min-height:100%;
+  width:max-content;
+}
+.flow-hint{
+  position:absolute;bottom:10px;left:50%;
+  transform:translateX(-50%);
+  font-family:var(--mono);font-size:10px;
+  color:var(--ink-3);letter-spacing:.1em;
+  pointer-events:none;z-index:5;
+}
+
+#galleryView{
+  position:absolute;inset:0;
+  overflow-y:auto;
+  padding:28px 36px 40px;
+  display:none;
+}
+.gal-cols{display:flex;gap:28px;align-items:flex-start}
+.gal-col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:28px}
+
+/* ---------- 项目卡片 ---------- */
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  width:340px;
+  flex:0 0 auto;
+  display:flex;
+  flex-direction:column;
+  max-height:calc(100vh - 220px);
+  position:relative;
+  cursor:grab;
+}
+.card.dragging{opacity:.35;cursor:grabbing}
+.card.drop-before{box-shadow:-3px 0 0 var(--accent)}
+.card.drop-after{box-shadow:3px 0 0 var(--accent)}
+#galleryView .card.drop-before{box-shadow:0 -3px 0 var(--accent)}
+#galleryView .card.drop-after{box-shadow:0 3px 0 var(--accent)}
+.gal-col .card{width:100%;max-height:none}
+.card .bar{height:5px;flex:0 0 auto}
+.bar.high{background:linear-gradient(90deg,var(--c-high),var(--c-high-soft))}
+.bar.mid{background:linear-gradient(90deg,var(--c-mid),var(--c-mid-soft))}
+.bar.low{background:linear-gradient(90deg,var(--c-low),var(--c-low-soft))}
+.card .c-head{
+  padding:16px 18px 12px;
+  border-bottom:1px solid var(--line);
+  flex:0 0 auto;
+}
+.c-head.high{background:linear-gradient(180deg,rgba(217,67,54,.10),rgba(217,67,54,.02))}
+.c-head.mid{background:linear-gradient(180deg,rgba(239,160,60,.10),rgba(239,160,60,.02))}
+.c-head.low{background:linear-gradient(180deg,rgba(59,111,212,.08),rgba(59,111,212,.02))}
+.card .c-title{
+  font-family:var(--serif);
+  font-size:19px;
+  font-weight:600;
+  line-height:1.35;
+  margin-bottom:8px;
+  cursor:text;
+  border-bottom:1px dashed transparent;
+  display:inline-block;
+}
+.card .c-title:hover{border-bottom-color:var(--ink-3)}
+.card .c-title-edit{
+  font-family:var(--serif);
+  font-size:19px;
+  font-weight:600;
+  width:100%;
+  border:none;
+  border-bottom:1px solid var(--ink);
+  background:transparent;
+  outline:none;
+  margin-bottom:8px;
+  color:var(--ink);
+}
+.card .c-meta{
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--ink-2);
+  letter-spacing:.04em;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.imp{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  cursor:pointer;
+  padding:2px 4px;
+  margin-left:-4px;
+}
+.imp:hover{background:rgba(32,36,43,.06)}
+.imp i{display:inline-block;width:8px;height:8px}
+.imp.high{color:var(--c-high)}.imp.high i{background:var(--c-high)}
+.imp.mid{color:var(--c-mid)}.imp.mid i{background:var(--c-mid)}
+.imp.low{color:var(--c-low)}.imp.low i{background:var(--c-low)}
+.card .c-del{
+  position:absolute;
+  top:12px;right:12px;
+  display:none;
+  font-family:var(--mono);
+  font-size:11px;
+  border:none;background:none;
+  color:var(--ink-3);
+  cursor:pointer;
+  padding:2px 4px;
+  z-index:3;
+}
+.card:hover .c-del{display:block}
+.card .c-del:hover{color:var(--c-high)}
+.card .c-body{overflow-y:auto;flex:1 1 auto;padding:6px 0 10px}
+
+/* ---------- 文档行 ---------- */
+.doc{
+  display:flex;align-items:baseline;gap:8px;
+  padding:5px 18px;
+  background:transparent;
+  transition:background .12s;
+  position:relative;
+  line-height:1.5;
+}
+.doc:hover{background:rgba(32,36,43,.08)}
+.doc .d-date{font-family:var(--mono);font-size:10px;color:var(--ink-3);flex:0 0 auto}
+.doc .d-type{font-family:var(--mono);font-size:10px;color:var(--c-low);flex:0 0 auto}
+.doc .d-name{
+  font-size:12.5px;color:var(--ink);text-decoration:none;
+  flex:1 1 auto;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.doc .d-name:hover{color:var(--accent);text-decoration:underline}
+.doc .d-acts{flex:0 0 auto;display:none;gap:8px}
+.doc:hover .d-acts{display:inline-flex}
+.d-acts button{
+  font-family:var(--mono);font-size:9px;letter-spacing:.04em;
+  border:none;background:none;color:var(--ink-3);cursor:pointer;padding:0;
+}
+.d-acts button:hover{color:var(--accent)}
+
+#hiddenSec{display:none}
+body.show-hidden #hiddenSec{display:block}
+
+/* ---------- 弹层 ---------- */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(32,36,43,.32);
+  display:none;align-items:center;justify-content:center;
+  z-index:100;
+}
+.overlay.open{display:flex}
+.modal{
+  background:#fff;
+  border:1px solid var(--ink);
+  width:420px;max-width:92vw;
+  padding:26px 28px 22px;
+}
+.modal h3{font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:18px}
+.f-row{margin-bottom:14px}
+.f-row label{
+  display:block;font-family:var(--mono);font-size:10px;
+  letter-spacing:.08em;color:var(--ink-2);margin-bottom:5px;
+}
+.f-row input,.f-row select{
+  width:100%;font-family:var(--sans);font-size:13px;
+  padding:7px 10px;border:1px solid var(--line);
+  background:#fff;color:var(--ink);outline:none;
+}
+.f-row input:focus,.f-row select:focus{border-color:var(--ink-2)}
+.m-acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+/* 通用弹出菜单（归类 / 优先级 / 主题） */
+.pop{
+  position:fixed;display:none;
+  background:#fff;border:1px solid var(--ink);
+  z-index:120;min-width:170px;
+}
+.pop .pa-item{
+  font-family:var(--sans);font-size:12px;
+  padding:8px 14px;cursor:pointer;color:var(--ink);
+  display:flex;align-items:center;gap:8px;
+}
+.pop .pa-item:hover{background:var(--paper-2)}
+.pop .pa-item i{width:7px;height:7px;display:inline-block}
+.pop .pa-sep{border-top:1px solid var(--line);margin:4px 0}
+.pop .pa-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:.08em;
+  color:var(--ink-3);padding:8px 14px 2px;
+}
+.pop input[type=color]{
+  width:22px;height:22px;border:1px solid var(--line);
+  background:none;padding:0;cursor:pointer;
+}
+
+#toast{
+  position:fixed;bottom:22px;left:36px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.05em;
+  background:var(--ink);color:#fff;
+  padding:9px 16px;opacity:0;transition:opacity .25s;
+  pointer-events:none;z-index:200;
+}
+#toast.show{opacity:1}
+
+.empty-note{
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  padding:10px 18px 14px;letter-spacing:.04em;
+}
+
+/* ---------- 每日庆祝弹窗（可爱风 + 烟花） ---------- */
+.cheer{
+  background:rgba(255,255,255,.55);
+  backdrop-filter:blur(3px);
+  z-index:300;
+}
+.cheer.open{display:flex}
+#fwCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cheer-modal{
+  position:relative;
+  background:#fff;
+  border-radius:26px;
+  border:2px solid #FFD9C7;
+  width:380px;max-width:90vw;
+  padding:38px 30px 28px;
+  text-align:center;
+  box-shadow:0 18px 50px rgba(217,108,44,.18);
+  animation:cheerPop .55s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes cheerPop{
+  0%{transform:scale(.6) translateY(30px);opacity:0}
+  100%{transform:scale(1) translateY(0);opacity:1}
+}
+.cheer-badge{
+  width:54px;height:54px;
+  margin:-70px auto 14px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#FFB37E,#F07BA0);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 16px rgba(240,123,160,.35);
+}
+.cheer-badge svg{width:26px;height:26px}
+.cheer-title{
+  font-family:var(--serif);
+  font-size:24px;font-weight:600;
+  color:var(--ink);
+  margin-bottom:10px;
+}
+.cheer-body{font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.cheer-body b{
+  font-family:var(--serif);
+  font-size:22px;color:#E86A4A;
+  padding:0 2px;
+}
+.cheer-sub{
+  font-family:var(--mono);
+  font-size:11px;color:var(--ink-3);
+  letter-spacing:.03em;
+  margin:12px 0 22px;
+  line-height:1.8;
+}
+.cheer-btn{
+  font-family:var(--sans);
+  font-size:14px;font-weight:500;
+  color:#fff;
+  background:linear-gradient(135deg,#FF9E6D,#F07BA0);
+  border:none;border-radius:999px;
+  padding:12px 34px;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(240,123,160,.35);
+  transition:transform .15s;
+}
+.cheer-btn:hover{transform:translateY(-2px) scale(1.03)}
+.cheer-btn:active{transform:scale(.97)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="masthead">
+    <div class="brand">
+      <h1>文档索引</h1>
+      <span class="en">WeCom Document Ledger</span>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="toolbar">
+    <input class="search" id="searchInput" placeholder="检索文档名称…">
+    <div class="view-toggle">
+      <button id="vFlow" class="on">展开视图</button>
+      <button id="vGallery">画廊视图</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn accent" id="btnSync">巡检更新</button>
+    <button class="btn" id="btnAddDoc">新增文档</button>
+    <button class="btn" id="btnAddProj">新增项目</button>
+    <button class="btn" id="btnHidden">隐藏管理</button>
+    <button class="btn" id="btnTheme">主题</button>
+  </div>
+</header>
+
+<section id="uncat">
+  <div class="uc-head">
+    <button class="uc-toggle" id="ucToggle" title="展开 / 收起">▸</button>
+    <span class="uc-title">未分类</span>
+    <span class="uc-note" id="uncatNote"></span>
+  </div>
+  <div class="uc-grid" id="uncatGrid"></div>
+</section>
+
+<section id="hiddenSec"><div id="hiddenBox"></div></section>
+
+<main>
+  <div id="flowView">
+    <div class="flow-track" id="flowTrack"></div>
+    <div class="flow-hint">移动鼠标远离中轴 · 滚动速度随距离递增</div>
+  </div>
+  <div id="galleryView"><div class="gal-cols" id="galCols"></div></div>
+</main>
+
+<div class="overlay" id="overlay"><div class="modal" id="modalBox"></div></div>
+<div class="pop" id="popAssign"></div>
+<div class="pop" id="popImp"></div>
+<div class="pop" id="popTheme"></div>
+<div id="toast"></div>
+
+<div class="overlay cheer" id="cheerOverlay">
+  <canvas id="fwCanvas"></canvas>
+  <div class="cheer-modal">
+    <div class="cheer-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l1.9 4.6 4.9.4-3.7 3.2 1.1 4.8L12 13.6 7.8 16l1.1-4.8-3.7-3.2 4.9-.4z"/>
+      </svg>
+    </div>
+    <div class="cheer-title">工作辛苦啦</div>
+    <div class="cheer-body">昨日又产出了 <b id="cheerNew">0</b> 篇文档</div>
+    <div class="cheer-sub" id="cheerTotal"></div>
+    <button class="cheer-btn" id="cheerClose">今天继续加油鸭！</button>
+  </div>
+</div>
+
+<script>
+const SEED = {"docs": [{"id": "d1", "name": "yasminwu的【报名&提问】TownHall Meeting 05｜看 AI如何在最不能出错的地方产生价值(09-17)", "type": "其他", "date": "2026-09-17", "url": "https://doc.weixin.qq.com/forms/AJEAIQdfAAoANgAOwaQAFgCNoO38RNQHf?_cef_tabid_=a7f808de99e69f436b88c146ac1a73e5&detail_answer_id=14", "pid": "p6", "hidden": false}, {"id": "d2", "name": "信用卡AI产品需求", "type": "智能表", "date": "2026-09-09", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CNtY1Vu8V1RrK6VDYJ?scode=AJEAIQdfAAouLnxIOeAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d3", "name": "GEO优化--品牌外宣文档补充", "type": "文档", "date": "2026-09-09", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNlDP3YPzjRx6L01vk?scode=AJEAIQdfAAo8lHTTYmAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d4", "name": "GEO检索评测集", "type": "表格", "date": "2026-09-08", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN5A1UmQeKT2KIYf1P?scode=AJEAIQdfAAo0nhK5dfAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d5", "name": "银行AI可见指数报告", "type": "文档", "date": "2026-09-08", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNe40v6ik8TBC0CRBu?scode=AJEAIQdfAAoY2pJRaDAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d6", "name": "信用卡AI产品需求", "type": "智能文档", "date": "2026-09-08", "url": "https://doc.weixin.qq.com/smartpage/a1_AcsAKAZcAB0CNbq5wh7T9R76kgPkI?scode=AJEAIQdfAAoQSvua0wAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d7", "name": "数据分析Agent", "type": "文档", "date": "2026-09-08", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN0PeBQ1vpQmCPmwqm?scode=AJEAIQdfAAo1SmrGgJAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d8", "name": "信用卡还款 AI可见度报告", "type": "文档", "date": "2026-09-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNUN1vklMsSL2UPO2K?scode=AJEAIQdfAAoug4EJZ3AcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d9", "name": "银行联网优惠抓取", "type": "文档", "date": "2026-08-25", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNJ0Z785jAS0SA8thg?scode=AJEAIQdfAAoWxRlHX8AcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d10", "name": "0825主持", "type": "文档", "date": "2026-08-24", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNEeJJreD5Sly0qZ8w?scode=AJEAIQdfAAo1tLWW8IAcsAKAZcAB0", "pid": "p6", "hidden": false}, {"id": "d11", "name": "副本-首页AI入口方案", "type": "文档", "date": "2026-08-21", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNOawSfYvjTS6MsvFz?scode=AJEAIQdfAAoUJZbi4kAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d12", "name": "0825 微信 AI 接入进展", "type": "文档", "date": "2026-08-20", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN4K8aTexXSU6MT14e?scode=AJEAIQdfAAo2E4SYg2AcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d13", "name": "AI进展握手会说明8.18", "type": "文档", "date": "2026-08-17", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNgy1lhWNLS0e3rPs7?scode=AJEAIQdfAAog86ci1hAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d14", "name": "吴媛媛的【报名&提问】TownHall Meeting 04｜设计、研发，如何助力产品让「用户」爽到极致？(08-17)", "type": "其他", "date": "2026-08-17", "url": "https://doc.weixin.qq.com/forms/AJEAIQdfAAoANgAOwaQAFgCN6yycjzDJf?_cef_tabid_=1c87efa8ff355e347d612c7f3acec0b8&detail_answer_id=68", "pid": "p6", "hidden": false}, {"id": "d15", "name": "智能运营评测报告", "type": "文档", "date": "2026-08-17", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNMK7cV0HTRnGEXnDD?scode=AJEAIQdfAAopcg5D59AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d16", "name": "智能助手定制query分析skill", "type": "文档", "date": "2026-08-14", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNPrk6DtxERKigbQ0w?scode=AJEAIQdfAAok8K9FcbAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d17", "name": "发卡配置表", "type": "表格", "date": "2026-08-12", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNKAsmRcydQPet1Q0s?scode=AJEAIQdfAAoqGLUnq2AcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d18", "name": "AI产品脑暴会", "type": "文档", "date": "2026-08-11", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNN9hS0AxYRemVTBpo?scode=AJEAIQdfAAoYjVD9mxAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d19", "name": "首页AI入口Agent", "type": "文档", "date": "2026-08-11", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNKmen7D1PTQmQbXzl?scode=AJEAIQdfAAo5LrBdNEAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d20", "name": "微信GEO搜索优化&品牌外宣材料审核", "type": "文档", "date": "2026-08-10", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNC4flRcIcTuOwk572?scode=AJEAIQdfAAoc9X4iGaAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d21", "name": "首页", "type": "文档", "date": "2026-08-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNocx6DpBTR0SvDM6l?scode=AJEAIQdfAAo6uxXJmxAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d22", "name": "首页AI入口方案", "type": "文档", "date": "2026-08-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNGOThcyboT9Oq8nzE?scode=AJEAIQdfAAoVA1wTwNAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d23", "name": "AI进展梳理", "type": "文档", "date": "2026-08-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNwaa32YyYTeGVN13H?scode=AJEAIQdfAAoGkNEBhhAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d24", "name": "推文修改说明", "type": "文档", "date": "2026-08-06", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNZTntKGAuSaaVjnlC?scode=AJEAIQdfAAosHEUb1TAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d25", "name": "发卡策略表-持续更新中", "type": "文档", "date": "2026-08-04", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNONXZ4eUYT90XyMgR?scode=AJEAIQdfAAoymQmLVzAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d26", "name": "信用卡skill意图说明", "type": "表格", "date": "2026-08-02", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN0xz2qQUkSUiO9LNc?scode=AJEAIQdfAAozlwbv77AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d27", "name": "智能助手交接知识库1.0", "type": "表格", "date": "2026-08-02", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNDLDghFMDSYiLRiVz?scode=AJEAIQdfAAotDoNMMgAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d28", "name": "2026.8.2信用卡优惠信息源", "type": "表格", "date": "2026-07-30", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN4rMtyUUDSCOogGhR?scode=AJEAIQdfAAoVbtRRWfAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d29", "name": "信用卡优惠推送新增 贴图【优惠合集】", "type": "文档", "date": "2026-07-30", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNYE6AlXRyQVGi0dYk?scode=AJEAIQdfAAoG2XH3txAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d30", "name": "副本-【优质内容源】信用卡玩卡优质内容汇集", "type": "表格", "date": "2026-07-30", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNrAEUbb9aRX20KsaM?scode=AJEAIQdfAAot1CMMGSAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d31", "name": "副本-信用卡智能客服设计文档", "type": "文档", "date": "2026-07-30", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNzVF8cqiKQceW9j59?scode=AJEAIQdfAAoq18Btl0AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d32", "name": "微信信用卡开源skill（信用卡省钱master）", "type": "文档", "date": "2026-07-29", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNSP6OivrZQ3OBFRU1?scode=AJEAIQdfAAoNRASy1IAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d33", "name": "无标题文档", "type": "文档", "date": "2026-07-29", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNoR5yCOUbRUGhqHI1?scode=AJEAIQdfAAo0dDP04wAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d34", "name": "智能助手需求整理-wyy", "type": "表格", "date": "2026-07-28", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNzfnkUXUGRHO8VDgG?scode=AJEAIQdfAAoIVeJW42AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d35", "name": "无标题文档", "type": "文档", "date": "2026-07-28", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNDevCKKF0RGGPGi0x?scode=AJEAIQdfAAogvkj3y0AcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d36", "name": "AI需求", "type": "文档", "date": "2026-07-24", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNGT1MykelRsCPj4VB?scode=AJEAIQdfAAox3XjIstAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d37", "name": "公众号推文排版修改说明", "type": "文档", "date": "2026-07-24", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNg2R4o9PtSDSgOARy?scode=AJEAIQdfAAowjgV55xAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d38", "name": "副本-账分AI专项收益成本预估", "type": "表格", "date": "2026-07-24", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNgALbM0nGQ323kUv3?scode=AJEAIQdfAAoyl6awZVAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d39", "name": "公众号品牌外宣内容规划表", "type": "智能表", "date": "2026-07-23", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CNY0cYvhE5TuioF9Tz?scode=AJEAIQdfAAoj9gXFNnAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d40", "name": "公众号推文管理修改", "type": "文档", "date": "2026-07-22", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNUFerVB8QSH68lowM?scode=AJEAIQdfAAo6XJhvmJAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d41", "name": "无标题文档", "type": "文档", "date": "2026-07-22", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNN5Rqu0WTTU0Xk2Lt?scode=AJEAIQdfAAoFXRSRdXAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d42", "name": "无标题文档", "type": "文档", "date": "2026-07-22", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNZZ5dK1SeSqicQNCt?scode=AJEAIQdfAAooR8A2DpAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d43", "name": "副本-关于「评测文件」的特别说明", "type": "文档", "date": "2026-07-21", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNSZBJ8y4CQh6IVCJG?scode=AJEAIQdfAAol5eGlA1AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d44", "name": "AI搜索与品牌建设", "type": "文档", "date": "2026-07-21", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNzhAGVBfVR1Cdrx5N?scode=AJEAIQdfAAo71nzYZPAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d45", "name": "微信AI搜索优化", "type": "文档", "date": "2026-07-21", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNohmS2gHjQRyiWbhb?scode=AJEAIQdfAAoEpwOhKWAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d46", "name": "智能助手备注文档", "type": "表格", "date": "2026-07-20", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNSU1kTAFtQ1OYKGw8?scode=AJEAIQdfAAoBm2MhQEAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d47", "name": "Geo优化召回效果", "type": "文档", "date": "2026-07-20", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNaZeVyNK4RTiwI8nl?scode=AJEAIQdfAAoO3uyCY1AcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d48", "name": "信用卡还款skill评测反馈", "type": "文档", "date": "2026-07-15", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNxPtRRsEqRguRLUtY?scode=AJEAIQdfAAoRPxgGSTAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d49", "name": "免审批产品验收测试用例", "type": "表格", "date": "2026-07-13", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN54Z250qETMy0YFiR?scode=AJEAIQdfAAo5OQviM0AcsAKAZcAB0", "pid": "p1", "hidden": false}, {"id": "d50", "name": "免审批上线验收", "type": "文档", "date": "2026-07-13", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNXR0NQUrQSzyxG0g0?scode=AJEAIQdfAAo1N6ImMEAcsAKAZcAB0", "pid": "p1", "hidden": false}, {"id": "d51", "name": "智能运营-评测报告", "type": "智能表", "date": "2026-07-07", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CN2YMIC0I9RPyG4S2O?scode=AJEAIQdfAAoPjzTNf8AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d52", "name": "与理财通业务交流会议纪要", "type": "文档", "date": "2026-07-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNn0rxLnaCT42RZ4Vb?scode=AJEAIQdfAAoZlLKy4bAcsAKAZcAB0", "pid": "p6", "hidden": false}, {"id": "d53", "name": "公众号图文排版需求", "type": "文档", "date": "2026-07-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNNxaBQH04TCOhe5Fl?scode=AJEAIQdfAAowhrIFS8AcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d54", "name": "副本-2026年精细化运营沉淀汇总", "type": "表格", "date": "2026-07-06", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNCQWiCBB8Rua12cen?scode=AJEAIQdfAAodSYOChvAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d55", "name": "微信AI- GUI方案适配", "type": "文档", "date": "2026-07-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN5RC1CNaYSICLXk8z?scode=AJEAIQdfAAoKx8uZ0JAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d56", "name": "智能运营项目全览", "type": "文档", "date": "2026-07-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNntbqo1sSRpCgoNZe?scode=AJEAIQdfAAo99BUnG2AcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d57", "name": "微信AI-信用卡还款Skill数据基建", "type": "文档", "date": "2026-07-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN0aL0IOXDSa05BYT5?scode=AJEAIQdfAAoD241LTcAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d58", "name": "小程序接入模式更新讨论", "type": "文档", "date": "2026-07-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNbmj4I1FWT9ujQJTq?scode=AJEAIQdfAAoxum9TprAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d59", "name": "微信AI-WYY撰写材料汇总", "type": "文档", "date": "2026-06-30", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNu1nZ9w1uQeSmwW36?scode=AJEAIQdfAAo5PuAIUhAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d60", "name": "信用卡还款Skill 方案2.0", "type": "文档", "date": "2026-06-30", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNBxNGDAiqSG2HDwgJ?scode=AJEAIQdfAAooTw6gT5AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d61", "name": "免审批上线规则", "type": "文档", "date": "2026-06-29", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN3esgohuwR1S0DYCf?scode=AJEAIQdfAAoP1HcMAdAcsAKAZcAB0", "pid": "p1", "hidden": false}, {"id": "d62", "name": "26年5月还款免费额度精细化运营-弹窗位-投放效果", "type": "表格", "date": "2026-06-25", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNJCJR8Ld0TRiNsj0J?scode=AJEAIQdfAAouQgm5meAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d63", "name": "信用卡还款-微信AI内测-问题反馈", "type": "文档", "date": "2026-06-25", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNx5xMBD1aQIWpe0mP?scode=AJEAIQdfAAoVjyEUI5AcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d64", "name": "微信AI内测同步¡", "type": "文档", "date": "2026-06-25", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNGdlL1Z94QVWW08dv?scode=AJEAIQdfAAo7LsMWSeAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d65", "name": "运营中台免审批投放名单", "type": "表格", "date": "2026-06-24", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNaeq3eckVQbqSZSXc?scode=AJEAIQdfAAoonZPaTFAcsAKAZcAB0", "pid": "p1", "hidden": false}, {"id": "d66", "name": "0625微信AI内测反馈", "type": "文档", "date": "2026-06-22", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN6sLe589uRzSF1KSu?scode=AJEAIQdfAAoG50HzDNAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d67", "name": "微信AI自动接入模式-上线监控", "type": "智能表", "date": "2026-06-18", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CNVwUJlorRRZ09hR32?scode=AJEAIQdfAAoKx2awfOAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d68", "name": "微信AI上线应急监控方案", "type": "文档", "date": "2026-06-18", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNxYhEqAlkQ5OYxR11?scode=AJEAIQdfAAos1kPG6jAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d69", "name": "小程序业务知识库评测档案", "type": "智能表", "date": "2026-06-18", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CN6kWcvmW2Simx07ph?scode=AJEAIQdfAAoWZk0bFkAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d70", "name": "副本-智能助手“猜你想问”评测集与评测结果_2026.04.22", "type": "表格", "date": "2026-06-17", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNEw0cAkkGTxKVkUAI?scode=AJEAIQdfAAo3DCSneoAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d71", "name": "无标题文档", "type": "文档", "date": "2026-06-17", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN0zhmlSCMQeGJGL35?scode=AJEAIQdfAAoqqK5ZuXAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d72", "name": "无标题文档", "type": "文档", "date": "2026-06-17", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNgv4CamS1T0SJz6uf?scode=AJEAIQdfAAoQtDOz0sAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d73", "name": "小程序Agent首批体验名单", "type": "智能表", "date": "2026-06-15", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CNQisUQp1vS5Slotnh?scode=AJEAIQdfAAoekhD0zPAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d74", "name": "信用卡还款-首批内测人员列表", "type": "表格", "date": "2026-06-12", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN6CvRSVlIT4qUWPYg?scode=AJEAIQdfAAoNzLiAbYAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d75", "name": "6.4query分布", "type": "表格", "date": "2026-06-12", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNx9M85eA9Q0OVTyNI?scode=AJEAIQdfAAoXNkoZE5AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d76", "name": "问卷投放人群", "type": "文档", "date": "2026-06-11", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNA1k3wam9S1WehU40?scode=AJEAIQdfAAowLBd6IVAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d77", "name": "信用卡中心名单", "type": "表格", "date": "2026-06-11", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN91sePkRCQF66DQl9?scode=AJEAIQdfAAoN7ojeDZAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d78", "name": "智能运营看板设计", "type": "文档", "date": "2026-06-10", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN3c7EEvEYTsOCZTcn?scode=AJEAIQdfAAoUdiUk0KAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d79", "name": "策略SKill", "type": "文档", "date": "2026-06-09", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNkAOWvAAwQzuBDek5?scode=AJEAIQdfAAoss9As6aAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d80", "name": "免费额度配置表", "type": "表格", "date": "2026-06-08", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNEpOym1DOSdKKKY9h?scode=AJEAIQdfAAoFRBmbtrAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d81", "name": "小程序Agent业务知识填写说明", "type": "文档", "date": "2026-06-04", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNqEohfHOHT3q3vVyh?scode=AJEAIQdfAAoVbZw3KcAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d82", "name": "小程序Agent业务知识库", "type": "表格", "date": "2026-06-04", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNtfgYULk1RUmXOr6e?scode=AJEAIQdfAAo6UqVcXXAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d83", "name": "无标题文档", "type": "文档", "date": "2026-06-04", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNICb0SFqHTcKbB0qO?scode=AJEAIQdfAAoEyLbT0GAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d84", "name": "知识库接入修改方案", "type": "文档", "date": "2026-06-03", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN3XHJck7MQ3SMxZ97?scode=AJEAIQdfAAofUE7D6VAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d85", "name": "0604-信用卡还款Skill进展同步", "type": "文档", "date": "2026-06-03", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNWJQ0xtUPTO0pLNxC?scode=AJEAIQdfAAoVfEWn1vAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d86", "name": "0602从模型竞争到业务系统：姚顺雨带来的几个判断", "type": "文档", "date": "2026-06-03", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN3hb7J9qVRaCqbwap?scode=AJEAIQdfAAop9T1zP3AcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d87", "name": "0603思考与分享", "type": "文档", "date": "2026-06-03", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN8rd18hzDSP2iXTvO?scode=AJEAIQdfAAosO0qiZsAcsAKAZcAB0", "pid": "p6", "hidden": false}, {"id": "d88", "name": "小程序Agent接入组件档案", "type": "表格", "date": "2026-06-01", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNoAilFBlAQHmSrr49?scode=AJEAIQdfAAopzRglYOAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d89", "name": "免费额度策略表", "type": "文档", "date": "2026-05-28", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNa1SDZZcQSWez1rCn?scode=AJEAIQdfAAoogd5Qg8AcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d90", "name": "信用卡还款免费额度活动配置 SOP", "type": "文档", "date": "2026-05-28", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNALsr96ffQpevapvc?scode=AJEAIQdfAAoHPV65zfAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d91", "name": "运营图笑优化", "type": "智能表", "date": "2026-05-28", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CN9Ln7nZy1QG0HLk0Y?scode=AJEAIQdfAAosfLebfOAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d92", "name": "团建出行通知 · 待填写信息表", "type": "文档", "date": "2026-05-27", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNAjgsCVkMQluy4YSr?scode=AJEAIQdfAAojVZYMEaAcsAKAZcAB0", "pid": "p6", "hidden": false}, {"id": "d93", "name": "信用卡还款Skill 方案规划2.0", "type": "文档", "date": "2026-05-26", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNWGk27s1ORyuJ0EOr?scode=AJEAIQdfAAowrUHvejAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d94", "name": "信用卡AI native智能运营", "type": "文档", "date": "2026-05-26", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNldvxUt61TtWul0KH?scode=AJEAIQdfAAoGn064SjAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d95", "name": "无标题文档", "type": "文档", "date": "2026-05-26", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNBY51kSIjSzmGAzCR?scode=AJEAIQdfAAoL0nRD64AcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d96", "name": "小程序Agent数据上报", "type": "表格", "date": "2026-05-25", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNSJmRQNgOSEa3Yl88?scode=AJEAIQdfAAowI0N0bOAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d97", "name": "小程序Agent方案同步", "type": "文档", "date": "2026-05-21", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNpmSqpO1bRlKqHnOg?scode=AJEAIQdfAAoYzJOIRtAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d98", "name": "信用卡业务SKILL库", "type": "智能表", "date": "2026-05-21", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CNWK1o7veVQVyC1raW?scode=AJEAIQdfAAoB806UheAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d99", "name": "信用卡还款SKILL库", "type": "表格", "date": "2026-05-21", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNKKsIpt8bQ7SSQ9p3?scode=AJEAIQdfAAo8t2xkG8AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d100", "name": "Agent测试问题-反馈给微信团队", "type": "表格", "date": "2026-05-19", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNHcZ1irVOQs0gcrih?scode=AJEAIQdfAAoVwrDfT6AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d101", "name": "免费额度智能运营助手", "type": "文档", "date": "2026-05-19", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNPXc33pPeTh66PmRV?scode=AJEAIQdfAAomzPk0mMAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d102", "name": "Agent 数据上报方案", "type": "文档", "date": "2026-05-19", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNKQ6JE8xQRl6j98EJ?scode=AJEAIQdfAAoVVR5w4vAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d103", "name": "小程序Agent体验问题收集", "type": "表格", "date": "2026-05-14", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNhu2KLxz1TuKmZIMm?scode=AJEAIQdfAAo9mr2kyfAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d104", "name": "副本智能运营助手", "type": "文档", "date": "2026-05-13", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNVLeWCA0USQurNO9n?scode=AJEAIQdfAAolfCjmRsAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d105", "name": "5.9微信小程序AI对接讨论同步材料", "type": "文档", "date": "2026-05-11", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNfzp1G8jBTriJgpJc?scode=AJEAIQdfAAoIlZEsWMAcsAKAZcAB0", "pid": "p4", "hidden": false}, {"id": "d106", "name": "5.25查账还款主流程SKill-mvp版本测试", "type": "脑图", "date": "2026-05-11", "url": "https://doc.weixin.qq.com/mind/m4_AcsAKAZcAB0CNCzI4BZ0TSi2i0j90?scode=AJEAIQdfAAoCFNj1CeAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d107", "name": "小程序Agent发布影响", "type": "文档", "date": "2026-05-08", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN0PB6Clm8RrmKNF3h?scode=AJEAIQdfAAoZ3JVSQjAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d108", "name": "全局方案备份-还款Skill设计方案", "type": "文档", "date": "2026-05-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNFdjJYquwR7yMIdpb?scode=AJEAIQdfAAoVvaLouiAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d109", "name": "全局备份方案-信用卡还款Skill设计", "type": "文档", "date": "2026-05-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNqBuUQJ8OQD01Jd8j?scode=AJEAIQdfAAo8Mi1QsVAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d110", "name": "业务原子知识库", "type": "文档", "date": "2026-05-06", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNkR45gBfjQoK7kB4w?scode=AJEAIQdfAAo6QS8jR2AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d111", "name": "信用卡还款Skill知识库", "type": "表格", "date": "2026-05-06", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNOBSGYhajRNOmePSt?scode=AJEAIQdfAAoXq63wtqAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d112", "name": "待微信小程序Agent确认事项", "type": "文档", "date": "2026-05-06", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNMQNFf0YATm0sIxor?scode=AJEAIQdfAAoX5LawM1AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d113", "name": "申请信用卡Skill", "type": "文档", "date": "2026-05-03", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNUREoBMi2QtmYu6Pe?scode=AJEAIQdfAAobl56pztAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d114", "name": "副本-订阅消息交接文档Edenbwang", "type": "文档", "date": "2026-05-03", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNZ3PQWoE1SCiCrbpk?scode=AJEAIQdfAAo2rvyp7XAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d115", "name": "信用卡还款提醒订阅 Skill 设计方案", "type": "文档", "date": "2026-05-03", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN5ulMC6E3R5qCggf0?scode=AJEAIQdfAAo81fAaBIAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d116", "name": "副本-3.0Plus交易半弹层规则", "type": "表格", "date": "2026-05-02", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNgIz4OFRsRQKNxjOS?scode=AJEAIQdfAAoBtmU9qjAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d117", "name": "备份-还款Skill设计方案", "type": "文档", "date": "2026-05-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNTnGEbkqoSSCbVD2T?scode=AJEAIQdfAAo0AWA9bNAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d118", "name": "AI原子服务交互形态讨论", "type": "文档", "date": "2026-04-30", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNJW9VujQCQDCPPRyr?scode=AJEAIQdfAAokBc0YoZAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d119", "name": "副本-信用卡还款Skill设计", "type": "文档", "date": "2026-04-29", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNkwF0JhYKTpaP6wyZ?scode=AJEAIQdfAAoKbyuQdTAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d120", "name": "无标题文档", "type": "文档", "date": "2026-04-29", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN0AjDwO19T0SaAbNg?scode=AJEAIQdfAAo9bfVkM6AcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d121", "name": "yasminwu的【报名&提问】FiT TownHall Meeting-第二期 5月14日，如期而至！(04-29)", "type": "其他", "date": "2026-04-29", "url": "https://doc.weixin.qq.com/forms/AJEAIQdfAAoANgAOwaQAFgCN0zrvw37sf?_cef_tabid_=5f522d455111963b1051261f7059adc7&detail_answer_id=306", "pid": "p6", "hidden": false}, {"id": "d122", "name": "SKILL.md", "type": "文档", "date": "2026-04-28", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNkZ7phz55QPOni76w?scode=AJEAIQdfAAo5NjTSJJAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d123", "name": "信用卡还款平台原子能力", "type": "表格", "date": "2026-04-27", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CND5KrwUxbQzuwmBuY?scode=AJEAIQdfAAoqsSgkyZAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d124", "name": "信用卡还款Skill设计", "type": "文档", "date": "2026-04-27", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNhLvjCB9DSQGJMcqJ?scode=AJEAIQdfAAoR3hlCnZAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d125", "name": "运营投放素材梳理报告", "type": "文档", "date": "2026-04-20", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN0nGiGxl9QQCo0DxT?scode=AJEAIQdfAAoECW0EUGAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d126", "name": "Query engine没有用DAG、状态图，只靠系统提示此，调用模型，模型返回工具调用，结果返回给模型，继续循环，直到吐出答案。", "type": "文档", "date": "2026-04-20", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNoTXVKIUpQTiGUVWf?scode=AJEAIQdfAAo9VkVmwuAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d127", "name": "微信支付Skill分析", "type": "文档", "date": "2026-04-19", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNp7P5Vo4URVGuUWZ0?scode=AJEAIQdfAAo9IpvubUAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d128", "name": "文档目录", "type": "表格", "date": "2026-04-19", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNFFqi109WQYCw0hHH?scode=AJEAIQdfAAorjnXS4aAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d129", "name": "投放计划--测试", "type": "文档", "date": "2026-04-17", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNWtPsq9J8RXC1Ki6N?scode=AJEAIQdfAAoosNY9huAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d130", "name": "yy投放素材梳理-还款主流程营销资源支持", "type": "表格", "date": "2026-04-17", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNy9kuvg4mRZ2FQunB?scode=AJEAIQdfAAo4la89R5AcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d131", "name": "4.13-4.16query", "type": "表格", "date": "2026-04-16", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNm3cDoOBcTD0qgd52?scode=AJEAIQdfAAovq5HDCbAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d132", "name": "无标题文档", "type": "文档", "date": "2026-04-16", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNFGmNn5vFQLKDhK4S?scode=AJEAIQdfAAoUmxmHEXAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d133", "name": "运营投放素材梳理", "type": "表格", "date": "2026-04-16", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNfwgp00RpR82oIMtf?scode=AJEAIQdfAAofPSzxYpAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d134", "name": "开账弹窗精细化运营", "type": "文档", "date": "2026-04-16", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNIB7bXfGSTC2qWFzW?scode=AJEAIQdfAAo1XZ6liOAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d135", "name": "无标题文档", "type": "文档", "date": "2026-04-16", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNAs2e4ETzQYWnbM36?scode=AJEAIQdfAAooVjHo81AcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d136", "name": "投放素材与画像标签定义", "type": "文档", "date": "2026-04-14", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN6ScpVzCKQK2whd9d?scode=AJEAIQdfAAo6u29Gb4AcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d137", "name": "投放评测集", "type": "表格", "date": "2026-04-14", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN6jswHVclRXSXZouv?scode=AJEAIQdfAAoHZJg7I1AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d138", "name": "用户画像标签", "type": "表格", "date": "2026-04-13", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNEEae8IgOQJ20Apxw?scode=AJEAIQdfAAoQ1XOPUAAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d139", "name": "无标题文档", "type": "文档", "date": "2026-04-13", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNvui4ZhKwRAS1aObP?scode=AJEAIQdfAAoNbDmCULAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d140", "name": "无标题文档", "type": "文档", "date": "2026-04-09", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN1qMtF1z1ScOHR1XS?scode=AJEAIQdfAAoIzcBMz2AcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d141", "name": "AI推荐投放", "type": "文档", "date": "2026-04-09", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNXa3jFsBpRDilLTBI?scode=AJEAIQdfAAoABuknGxAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d142", "name": "500-AI相关实习项目介绍", "type": "文档", "date": "2026-04-09", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNMCNCKnBKRlOb0Dfr?scode=AJEAIQdfAAoBS1DIJYAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d143", "name": "信用卡-无人化运营", "type": "文档", "date": "2026-04-08", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNP3ln5CnLTHKHiLro?scode=AJEAIQdfAAoFZ1N0J2AcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d144", "name": "yy-信用卡AI能力建设", "type": "表格", "date": "2026-04-08", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNJoBFiAqIQwS0dq6g?scode=AJEAIQdfAAoavHQPABAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d145", "name": "AI产品思考分享", "type": "文档", "date": "2026-04-08", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNffy53vvMTaGaPzSB?scode=AJEAIQdfAAomV1Y1nTAcsAKAZcAB0", "pid": "p6", "hidden": false}, {"id": "d146", "name": "副本-信用卡智能客服-知识库1.0", "type": "表格", "date": "2026-04-07", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNIy5ckfVFQ7el0Aqe?scode=AJEAIQdfAAoYrk105bAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d147", "name": "数字人民币query整理报告", "type": "文档", "date": "2026-04-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNW8Vva5iiSWuHOna7?scode=AJEAIQdfAAo31lwVNwAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d148", "name": "无标题文档", "type": "文档", "date": "2026-04-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNgpngsZIBTOyCpArG?scode=AJEAIQdfAAoQbf7WwpAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d149", "name": "副本-信用卡智能助手query分析", "type": "表格", "date": "2026-04-01", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNZUcNvgnhTMmBTZJa?scode=AJEAIQdfAAoMAz7ODZAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d150", "name": "Agent Skill 调研分析文档", "type": "文档", "date": "2026-03-31", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CN0FYj0x1HRFykDFbl?scode=AJEAIQdfAAoST2Vn0nAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d151", "name": "YY学习-信用卡AI应用服务进展及规划同步-1211", "type": "文档", "date": "2026-03-31", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNIMwqIBaoRFGrtZao?scode=AJEAIQdfAAoreDaVKKAcsAKAZcAB0", "pid": "p6", "hidden": false}, {"id": "d152", "name": "业务熟悉", "type": "文档", "date": "2026-03-31", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNWneRzbI0Tluwp0d0?scode=AJEAIQdfAAof03fGfcAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d153", "name": "新人入职前置业务备份文档", "type": "文档", "date": "2026-03-31", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNGRnxtv2gQzyjmcFh?scode=AJEAIQdfAAor0WBq0dAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d154", "name": "微信AI评测集", "type": "表格", "date": "2026-07-21", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CNQaJBc5HWRxqccn9B?scode=AJEAIQdfAAoZYx27uhAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d155", "name": "GEO搜索基建", "type": "文档", "date": "2026-06-29", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNGdC79QbIQxSzCowd?scode=AJEAIQdfAAoBnUD5nwAcsAKAZcAB0", "pid": "p2", "hidden": false}, {"id": "d156", "name": "Agent升级方案", "type": "文档", "date": "2026-09-07", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNEo2nw1jJQBeshTAm?scode=AJEAIQdfAAoHmZ1T5sAcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d157", "name": "智能助手增加数币一键开通链接", "type": "文档", "date": "2026-04-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNZYmpkejuScqo6xZY?scode=AJEAIQdfAAobNZKdN1AcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d158", "name": "数币知识库修改问题", "type": "文档", "date": "2026-04-02", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNEbRU132bQPmmh0VP?scode=AJEAIQdfAAozgilsq5AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d159", "name": "Agent验收同步", "type": "文档", "date": "2026-05-14", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNDGFQgg0OT009CpAv?scode=AJEAIQdfAAo1tcR4s0AcsAKAZcAB0", "pid": "p3", "hidden": false}, {"id": "d160", "name": "信用卡中心名单", "type": "表格", "date": "2026-06-11", "url": "https://doc.weixin.qq.com/sheet/e3_AcsAKAZcAB0CN91sePkRCQF66DQl9?scode=AJEAIQdfAAoJ3DFh6nAcsAKAZcAB0", "pid": "p5", "hidden": false}, {"id": "d161", "name": "信用卡业务SKILL库", "type": "智能表", "date": "2026-05-21", "url": "https://doc.weixin.qq.com/smartsheet/s3_AcsAKAZcAB0CNWK1o7veVQVyC1raW?scode=AJEAIQdfAAoViPYThkARUAGwb7AJ8", "pid": "p3", "hidden": false}, {"id": "d162", "name": "爬取列表", "type": "文档", "date": "2026-08-31", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNn05xUT16RWO0727M?scode=AJEAIQdfAAoajFUWnrAcsAKAZcAB0", "pid": null, "hidden": false}, {"id": "d163", "name": "AI", "type": "文档", "date": "2026-04-14", "url": "https://doc.weixin.qq.com/doc/w3_AcsAKAZcAB0CNHNnG9wOTSPSfF8Qg?scode=AJEAIQdfAAo1feCB1JAcsAKAZcAB0", "pid": null, "hidden": false}], "projects": [{"id": "p1", "title": "免审批运营", "imp": "中", "created": "2026-09-20"}, {"id": "p2", "title": "GEO 优化与品牌外宣", "imp": "高", "created": "2026-09-20"}, {"id": "p3", "title": "智能客服 Agent 与知识库", "imp": "高", "created": "2026-09-20"}, {"id": "p4", "title": "微信 AI 接入与内测", "imp": "高", "created": "2026-09-20"}, {"id": "p5", "title": "精细化运营与免费额度", "imp": "中", "created": "2026-09-20"}, {"id": "p6", "title": "会议纪要与周报", "imp": "低", "created": "2026-09-20"}], "lastSync": "2026-09-20 13:17", "patrol": {"date": "2026-09-20", "new_count": 0}};
+const LS_KEY = "wdb-ledger-v1";
+
+let state = null;
+try{ state = JSON.parse(localStorage.getItem(LS_KEY) || "null"); }catch(e){ state = null; }
+let newAdded = 0;
+if(!state || !state.docs){
+  state = JSON.parse(JSON.stringify(SEED));
+  state.view = "flow";
+  state.showHidden = false;
+}else{
+  // 增量合并：巡检注入的新文档（按 id 去重）落入未分类，已有状态与归类保持不变
+  const known = new Set(state.docs.map(d=>d.id));
+  SEED.docs.forEach(d=>{ if(!known.has(d.id)){ state.docs.push(d); newAdded++; } });
+  state.lastSync = SEED.lastSync;
+}
+if(typeof state.uncatOpen === "undefined") state.uncatOpen = false;
+if(!state.theme) state.theme = { bg:"#FFFFFF", accent:"#D96C2C" };
+let query = "";
+
+const THEMES = [
+  {name:"纯白", bg:"#FFFFFF"},
+  {name:"暖白", bg:"#FBFAF7"},
+  {name:"浅灰", bg:"#F4F4F2"},
+];
+const ACCENTS = [
+  {name:"橙", c:"#D96C2C"},
+  {name:"蓝", c:"#2E5E9E"},
+  {name:"绿", c:"#3E7A56"},
+  {name:"红", c:"#D94336"},
+];
+
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function projById(id){ return state.projects.find(p=>p.id===id); }
+function docsOf(pid){
+  return state.docs
+    .filter(d=>d.pid===pid && !d.hidden)
+    .filter(d=>!query || d.name.toLowerCase().includes(query))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+}
+const IMP_CLS = {"高":"high","中":"mid","低":"low"};
+const IMP_COLOR = {"高":"var(--c-high)","中":"var(--c-mid)","低":"var(--c-low)"};
+
+function applyTheme(){
+  document.documentElement.style.setProperty("--paper", state.theme.bg);
+  document.documentElement.style.setProperty("--accent", state.theme.accent);
+}
+
+/* ---------- 渲染 ---------- */
+function renderStats(){
+  const total = state.docs.filter(d=>!d.hidden).length;
+  const uncat = state.docs.filter(d=>!d.pid && !d.hidden).length;
+  const hidden = state.docs.filter(d=>d.hidden).length;
+  document.getElementById("stats").innerHTML =
+    `<span>文档 <b>${total}</b></span>`+
+    `<span>项目 <b>${state.projects.length}</b></span>`+
+    `<span>未分类 <b>${uncat}</b></span>`+
+    (hidden?`<span>已隐藏 <b>${hidden}</b></span>`:"")+
+    `<span>上次巡检 <b>${esc(state.lastSync||"—")}</b></span>`;
+}
+
+function docRow(d){
+  return `<div class="doc" data-id="${d.id}">
+    <span class="d-date">${d.date}</span>
+    <span class="d-type">${esc(d.type)}</span>
+    <a class="d-name" href="${esc(d.url||"#")}" target="_blank" rel="noopener" title="${esc(d.name)}">${esc(d.name)}</a>
+    <span class="d-acts">
+      <button data-act="assign">归类</button>
+      <button data-act="hide">隐藏</button>
+      <button data-act="del">删除</button>
+    </span>
+  </div>`;
+}
+
+function renderUncat(){
+  const list = state.docs
+    .filter(d=>!d.pid && !d.hidden)
+    .filter(d=>!query || d.name.toLowerCase().includes(query))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById("uncatNote").textContent =
+    `${list.length} 篇 · 每日巡检新增先落此区`;
+  document.getElementById("uncatGrid").innerHTML =
+    list.length ? list.map(docRow).join("") : `<div class="empty-note">全部文档均已归类</div>`;
+  document.getElementById("uncat").classList.toggle("open", !!state.uncatOpen);
+  document.getElementById("ucToggle").textContent = state.uncatOpen ? "▾" : "▸";
+}
+
+function cardHTML(p){
+  const list = docsOf(p.id);
+  const cls = IMP_CLS[p.imp] || "mid";
+  return `<div class="card" data-pid="${p.id}" draggable="true">
+    <div class="bar ${cls}"></div>
+    <button class="c-del" data-pact="del" title="删除项目">×</button>
+    <div class="c-head ${cls}">
+      <div class="c-title" data-pact="rename" title="点击修改标题">${esc(p.title)}</div>
+      <div class="c-meta">
+        <span class="imp ${cls}" data-pact="imp" title="点击调整优先级"><i></i>${esc(p.imp)}优先级</span>
+        <span>创建于 ${esc(p.created)}</span>
+        <span>${list.length} 篇</span>
+      </div>
+    </div>
+    <div class="c-body">
+      ${list.length ? list.map(docRow).join("") : `<div class="empty-note">暂无文档，从「未分类」归类或新增</div>`}
+    </div>
+  </div>`;
+}
+
+function renderFlow(){
+  document.getElementById("flowTrack").innerHTML = state.projects.map(cardHTML).join("");
+}
+
+function renderGallery(){
+  const colsEl = document.getElementById("galCols");
+  const n = Math.min(4, Math.max(1, state.projects.length));
+  const cols = Array.from({length:n},()=>({h:0,items:[]}));
+  const est = p => 140 + docsOf(p.id).length * 28;
+  // 保持手动排序：按 state.projects 顺序依次放入当前最短列
+  state.projects.forEach(p=>{
+    const c = cols.reduce((m,c)=>c.h<m.h?c:m, cols[0]);
+    c.items.push(p); c.h += est(p);
+  });
+  colsEl.innerHTML = cols.map(c=>
+    `<div class="gal-col">${c.items.map(cardHTML).join("")}</div>`
+  ).join("");
+}
+
+function renderHidden(){
+  const box = document.getElementById("hiddenBox");
+  if(!state.showHidden){ box.innerHTML=""; return; }
+  const list = state.docs.filter(d=>d.hidden).sort((a,b)=>b.date.localeCompare(a.date));
+  box.innerHTML = `<div style="padding:14px 36px 16px;border-bottom:1px solid var(--line);background:var(--paper-2)">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:10px">
+      <span style="font-family:var(--serif);font-size:16px;font-weight:600">已隐藏</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--ink-3)">${list.length} 篇 · 点「恢复」回到原分类</span>
+    </div>
+    <div style="column-width:300px;column-gap:28px">${
+      list.length ? list.map(d=>`<div class="doc" data-id="${d.id}">
+        <span class="d-date">${d.date}</span>
+        <span class="d-type">${esc(d.type)}</span>
+        <span class="d-name" style="color:var(--ink-3)">${esc(d.name)}</span>
+        <span class="d-acts" style="display:inline-flex"><button data-act="unhide">恢复</button><button data-act="del">删除</button></span>
+      </div>`).join("") : `<div class="empty-note">没有隐藏的文档</div>`
+    }</div></div>`;
+}
+
+function renderAll(){
+  document.body.classList.toggle("show-hidden", !!state.showHidden);
+  applyTheme();
+  renderStats(); renderUncat(); renderFlow(); renderGallery(); renderHidden();
+  document.getElementById("flowView").style.display = state.view==="flow" ? "block" : "none";
+  document.getElementById("galleryView").style.display = state.view==="gallery" ? "block" : "none";
+  document.getElementById("vFlow").classList.toggle("on", state.view==="flow");
+  document.getElementById("vGallery").classList.toggle("on", state.view==="gallery");
+}
+
+/* ---------- 展开视图：鼠标跟随滚动 ---------- */
+const flowEl = document.getElementById("flowView");
+let mxRatio = 0, hovering = false;
+flowEl.addEventListener("mousemove", e=>{
+  const r = flowEl.getBoundingClientRect();
+  mxRatio = (e.clientX - (r.left + r.width/2)) / (r.width/2);
+  hovering = true;
+});
+flowEl.addEventListener("mouseleave", ()=>{ hovering = false; });
+(function tick(){
+  if(state && state.view==="flow" && hovering){
+    const dead = 0.06;
+    const r = Math.abs(mxRatio) < dead ? 0 : mxRatio;
+    flowEl.scrollLeft += r * r * Math.sign(r) * 14;
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ---------- 通用 ---------- */
+let toastTimer = null;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function openModal(html){ document.getElementById("modalBox").innerHTML = html; document.getElementById("overlay").classList.add("open"); }
+function closeModal(){ document.getElementById("overlay").classList.remove("open"); }
+document.getElementById("overlay").addEventListener("click", e=>{ if(e.target.id==="overlay") closeModal(); });
+
+function placePop(pop, x, y){
+  pop.style.display = "block";
+  const w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.min(x, innerWidth - w - 12) + "px";
+  pop.style.top = Math.min(y, innerHeight - h - 12) + "px";
+}
+function closePops(){ document.querySelectorAll(".pop").forEach(p=>p.style.display="none"); }
+document.addEventListener("click", e=>{
+  if(!e.target.closest(".pop") && !e.target.closest("[data-act]") && !e.target.closest("[data-pact]") && e.target.id!=="btnTheme") closePops();
+});
+
+/* ---------- 顶栏 ---------- */
+document.getElementById("vFlow").onclick = ()=>{ state.view="flow"; save(); renderAll(); };
+document.getElementById("vGallery").onclick = ()=>{ state.view="gallery"; save(); renderAll(); };
+document.getElementById("searchInput").addEventListener("input", e=>{
+  query = e.target.value.trim().toLowerCase(); renderAll();
+});
+document.getElementById("btnHidden").onclick = ()=>{ state.showHidden = !state.showHidden; save(); renderAll(); };
+document.getElementById("ucToggle").onclick = ()=>{ state.uncatOpen = !state.uncatOpen; save(); renderAll(); };
+
+document.getElementById("btnSync").onclick = ()=>{
+  const now = new Date();
+  const pad = n=>String(n).padStart(2,"0");
+  state.lastSync = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  save(); renderAll();
+  showCheer(0);  // 手动巡检后同样弹出报告（demo 环境无法真实拉取，新增计 0）
+  state.lastSeenSync = state.lastSync.slice(0,10); save();
+};
+
+document.getElementById("btnTheme").onclick = (e)=>{
+  const pop = document.getElementById("popTheme");
+  pop.innerHTML =
+    `<div class="pa-label">页面背景</div>`+
+    THEMES.map(t=>`<div class="pa-item" data-bg="${t.bg}"><i style="background:${t.bg};border:1px solid var(--line)"></i>${t.name}${state.theme.bg===t.bg?" · 当前":""}</div>`).join("")+
+    `<div class="pa-sep"></div><div class="pa-label">强调色</div>`+
+    ACCENTS.map(a=>`<div class="pa-item" data-accent="${a.c}"><i style="background:${a.c}"></i>${a.name}${state.theme.accent===a.c?" · 当前":""}</div>`).join("")+
+    `<div class="pa-item"><input type="color" id="customAccent" value="${state.theme.accent}"> 自选强调色</div>`;
+  const r = e.target.getBoundingClientRect();
+  placePop(pop, r.left, r.bottom + 6);
+  pop.querySelectorAll("[data-bg]").forEach(el=>el.onclick=()=>{
+    state.theme.bg = el.dataset.bg; save(); renderAll(); closePops();
+  });
+  pop.querySelectorAll("[data-accent]").forEach(el=>el.onclick=()=>{
+    state.theme.accent = el.dataset.accent; save(); renderAll(); closePops();
+  });
+  const ci = document.getElementById("customAccent");
+  ci.onchange = ()=>{ state.theme.accent = ci.value; save(); renderAll(); };
+};
+
+document.getElementById("btnAddDoc").onclick = ()=>{
+  const opts = state.projects.map(p=>`<option value="${p.id}">${esc(p.title)}</option>`).join("");
+  openModal(`<h3>新增文档</h3>
+    <div class="f-row"><label>名称</label><input id="fName" placeholder="文档名称"></div>
+    <div class="f-row"><label>链接</label><input id="fUrl" placeholder="https://doc.weixin.qq.com/…"></div>
+    <div class="f-row"><label>类型</label><select id="fType">
+      <option>文档</option><option>表格</option><option>智能表</option><option>智能文档</option><option>脑图</option><option>其他</option>
+    </select></div>
+    <div class="f-row"><label>创建日期</label><input id="fDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="f-row"><label>归入项目</label><select id="fPid"><option value="">未分类</option>${opts}</select></div>
+    <div class="m-acts"><button class="btn" onclick="closeModal()">取消</button><button class="btn accent" id="fOk">保存</button></div>`);
+  document.getElementById("fOk").onclick = ()=>{
+    const name = document.getElementById("fName").value.trim();
+    if(!name){ toast("请填写名称"); return; }
+    state.docs.push({
+      id:"d"+Date.now(), name,
+      url:document.getElementById("fUrl").value.trim(),
+      type:document.getElementById("fType").value,
+      date:document.getElementById("fDate").value || new Date().toISOString().slice(0,10),
+      pid:document.getElementById("fPid").value || null,
+      hidden:false
+    });
+    save(); closeModal(); renderAll(); toast("已新增文档");
+  };
+};
+
+document.getElementById("btnAddProj").onclick = ()=>{
+  openModal(`<h3>新增项目分类</h3>
+    <div class="f-row"><label>项目标题</label><input id="pTitle" placeholder="例如：小微运营数据分析"></div>
+    <div class="f-row"><label>重要性</label><select id="pImp"><option>高</option><option selected>中</option><option>低</option></select></div>
+    <div class="m-acts"><button class="btn" onclick="closeModal()">取消</button><button class="btn accent" id="pOk">创建</button></div>`);
+  document.getElementById("pOk").onclick = ()=>{
+    const title = document.getElementById("pTitle").value.trim();
+    if(!title){ toast("请填写项目标题"); return; }
+    state.projects.push({
+      id:"p"+Date.now(), title,
+      imp:document.getElementById("pImp").value,
+      created:new Date().toISOString().slice(0,10)
+    });
+    save(); closeModal(); renderAll(); toast("已创建项目分类");
+  };
+};
+
+/* ---------- 归类菜单 ---------- */
+const popA = document.getElementById("popAssign");
+function openAssign(docId, x, y){
+  const items = [{id:"",title:"未分类",color:"#9AA0A8"}]
+    .concat(state.projects.map(p=>({id:p.id,title:p.title,color:IMP_COLOR[p.imp]||"#9AA0A8"})));
+  popA.innerHTML = items.map(i=>`<div class="pa-item" data-pid="${i.id}"><i style="background:${i.color}"></i>${esc(i.title)}</div>`).join("");
+  placePop(popA, x, y);
+  popA.querySelectorAll(".pa-item").forEach(el=>{
+    el.onclick = ()=>{
+      const d = state.docs.find(d=>d.id===docId);
+      if(d){ d.pid = el.dataset.pid || null; save(); renderAll(); toast("已归类"); }
+      closePops();
+    };
+  });
+}
+
+/* ---------- 文档行 / 卡片操作 ---------- */
+document.addEventListener("click", e=>{
+  const actBtn = e.target.closest("[data-act]");
+  if(actBtn){
+    const row = actBtn.closest(".doc");
+    const d = state.docs.find(x=>x.id===row.dataset.id);
+    if(!d) return;
+    const act = actBtn.dataset.act;
+    if(act==="assign"){ openAssign(d.id, e.clientX, e.clientY); }
+    if(act==="hide"){ d.hidden = true; save(); renderAll(); toast("已隐藏"); }
+    if(act==="unhide"){ d.hidden = false; save(); renderAll(); toast("已恢复"); }
+    if(act==="del"){
+      if(confirm(`确认删除「${d.name}」？只影响本管理台，不影响企微原文档。`)){
+        state.docs = state.docs.filter(x=>x.id!==d.id); save(); renderAll(); toast("已删除");
+      }
+    }
+    return;
+  }
+  const pactBtn = e.target.closest("[data-pact]");
+  if(pactBtn){
+    const card = pactBtn.closest(".card");
+    const p = projById(card.dataset.pid);
+    if(!p) return;
+    const act = pactBtn.dataset.pact;
+
+    if(act==="rename"){
+      // 标题点击即改：原位换成输入框
+      const titleEl = pactBtn;
+      const input = document.createElement("input");
+      input.className = "c-title-edit";
+      input.value = p.title;
+      titleEl.replaceWith(input);
+      input.focus(); input.select();
+      let done = false;
+      const commit = ()=>{
+        if(done) return; done = true;
+        const v = input.value.trim();
+        if(v) p.title = v;
+        save(); renderAll();
+      };
+      input.addEventListener("blur", commit);
+      input.addEventListener("keydown", ev=>{
+        if(ev.key==="Enter") commit();
+        if(ev.key==="Escape"){ done = true; renderAll(); }
+      });
+    }
+    if(act==="imp"){
+      const pop = document.getElementById("popImp");
+      pop.innerHTML = ["高","中","低"].map(v=>
+        `<div class="pa-item" data-imp="${v}"><i style="background:${IMP_COLOR[v]}"></i>${v}优先级${p.imp===v?" · 当前":""}</div>`
+      ).join("");
+      const r = pactBtn.getBoundingClientRect();
+      placePop(pop, r.left, r.bottom + 4);
+      pop.querySelectorAll(".pa-item").forEach(el=>el.onclick=()=>{
+        p.imp = el.dataset.imp; save(); renderAll(); closePops(); toast("优先级已调整为「"+p.imp+"」");
+      });
+    }
+    if(act==="del"){
+      if(confirm(`删除项目「${p.title}」？其中文档会回到未分类。`)){
+        state.docs.forEach(d=>{ if(d.pid===p.id) d.pid = null; });
+        state.projects = state.projects.filter(x=>x.id!==p.id);
+        save(); renderAll(); toast("项目已删除");
+      }
+    }
+  }
+});
+
+/* ---------- 卡片拖拽排序 ---------- */
+let dragPid = null;
+document.addEventListener("dragstart", e=>{
+  const card = e.target.closest && e.target.closest(".card");
+  if(!card) return;
+  dragPid = card.dataset.pid;
+  card.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+  try{ e.dataTransfer.setData("text/plain", dragPid); }catch(err){}
+});
+document.addEventListener("dragover", e=>{
+  if(!dragPid) return;
+  const card = e.target.closest && e.target.closest(".card");
+  if(!card || card.dataset.pid === dragPid) return;
+  e.preventDefault();
+  const inGallery = !!card.closest("#galleryView");
+  const r = card.getBoundingClientRect();
+  const before = inGallery
+    ? e.clientY < r.top + r.height/2
+    : e.clientX < r.left + r.width/2;
+  const dragged = document.querySelector(`.card[data-pid="${dragPid}"]`);
+  document.querySelectorAll(".card.drop-before,.card.drop-after").forEach(c=>c.classList.remove("drop-before","drop-after"));
+  if(dragged && dragged !== card){
+    if(before){ card.parentNode.insertBefore(dragged, card); }
+    else{ card.parentNode.insertBefore(dragged, card.nextSibling); }
+  }
+  card.classList.add(before ? "drop-before" : "drop-after");
+});
+document.addEventListener("drop", e=>{ if(dragPid) e.preventDefault(); });
+document.addEventListener("dragend", ()=>{
+  if(!dragPid) return;
+  document.querySelectorAll(".card.drop-before,.card.drop-after").forEach(c=>c.classList.remove("drop-before","drop-after"));
+  const viewSel = state.view==="flow" ? "#flowView .card" : "#galleryView .card";
+  const order = [...document.querySelectorAll(viewSel)].map(c=>c.dataset.pid);
+  const seen = new Set(order);
+  const rest = state.projects.filter(p=>!seen.has(p.id)).map(p=>p.id);
+  const newOrder = order.concat(rest);
+  state.projects.sort((a,b)=>newOrder.indexOf(a.id)-newOrder.indexOf(b.id));
+  dragPid = null;
+  save(); renderAll(); toast("顺序已保存");
+});
+
+renderAll();
+if(newAdded > 0){ toast(`巡检新增 ${newAdded} 篇文档，已放入未分类`); }
+
+/* ---------- 庆祝弹窗 + 烟花（自动巡检首次打开 / 手动巡检后均触发） ---------- */
+function showCheer(newCount){
+  document.getElementById("cheerNew").textContent = newCount;
+  const alive = state.docs.filter(d=>!d.hidden);
+  const typeCount = {};
+  alive.forEach(d=>{ typeCount[d.type] = (typeCount[d.type]||0) + 1; });
+  const breakdown = Object.entries(typeCount).map(([t,n])=>`${t} ${n}`).join(" · ");
+  document.getElementById("cheerTotal").textContent =
+    `知识库目前合计 ${alive.length} 篇文档（${breakdown}）`;
+
+  const overlay = document.getElementById("cheerOverlay");
+  const cv = document.getElementById("fwCanvas");
+  const ctx = cv.getContext("2d");
+  const COLORS = ["#FF9E6D","#F07BA0","#F5C445","#5BA8E8","#6FBF8E","#B48CE8"];
+  let parts = [], rockets = [], raf = null, launcher = null;
+
+  function resize(){ cv.width = innerWidth; cv.height = innerHeight; }
+  resize();
+
+  function boom(x, y){
+    const c = COLORS[Math.floor(Math.random()*COLORS.length)];
+    for(let i=0;i<46;i++){
+      const a = Math.random()*Math.PI*2, v = 1.6 + Math.random()*3.2;
+      parts.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v,
+                  life:1, decay:.012+Math.random()*.012, color:c,
+                  r:1.5+Math.random()*2});
+    }
+  }
+  function launch(){
+    rockets.push({x:innerWidth*(0.15+Math.random()*0.7), y:innerHeight,
+                  vy:-(7+Math.random()*3),
+                  ty:innerHeight*(0.18+Math.random()*0.3)});
+  }
+  function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    rockets = rockets.filter(r=>{
+      r.y += r.vy;
+      ctx.beginPath(); ctx.arc(r.x, r.y, 2.5, 0, Math.PI*2);
+      ctx.fillStyle = "#FFD9C7"; ctx.fill();
+      if(r.y <= r.ty){ boom(r.x, r.y); return false; }
+      return true;
+    });
+    parts = parts.filter(p=>{
+      p.x += p.vx; p.y += p.vy; p.vy += .045; p.life -= p.decay;
+      if(p.life <= 0) return false;
+      ctx.globalAlpha = Math.max(p.life, 0);
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = p.color; ctx.fill();
+      ctx.globalAlpha = 1;
+      return true;
+    });
+    raf = requestAnimationFrame(frame);
+  }
+
+  overlay.classList.add("open");
+  frame();
+  launch(); launch();
+  launcher = setInterval(launch, 650);
+  setTimeout(()=>{ clearInterval(launcher); }, 6000);
+
+  document.getElementById("cheerClose").onclick = ()=>{
+    clearInterval(launcher);
+    cancelAnimationFrame(raf);
+    overlay.classList.remove("open");
+  };
+}
+
+// 自动巡检后的首次打开触发
+(function(){
+  const syncDay = (SEED.lastSync || "").slice(0,10);
+  if(!syncDay || state.lastSeenSync === syncDay) return;
+  state.lastSeenSync = syncDay; save();
+  const newCount = (SEED.patrol && typeof SEED.patrol.new_count === "number") ? SEED.patrol.new_count : 0;
+  showCheer(newCount);
+})();
+</script>
+</body>
+</html>
