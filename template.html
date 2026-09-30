@@ -481,6 +481,9 @@ body.show-hidden #hiddenSec{display:block}
     <button class="btn" id="btnAddProj">新增项目</button>
     <button class="btn" id="btnHidden">隐藏管理</button>
     <button class="btn" id="btnTheme">主题</button>
+    <button class="btn" id="btnExport">导出状态</button>
+    <button class="btn" id="btnImport">导入状态</button>
+    <input type="file" id="importFile" accept=".json" style="display:none">
   </div>
 </header>
 
@@ -827,6 +830,59 @@ document.getElementById("btnTheme").onclick = (e)=>{
   const ci = document.getElementById("customAccent");
   ci.onchange = ()=>{ state.theme.accent = ci.value; save(); renderAll(); };
 };
+
+/* 导出/导入状态：让浏览器里的分类改动可以落盘、给我读取、换设备恢复 */
+document.getElementById("btnExport").onclick = ()=>{
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    lastSync: state.lastSync,
+    projects: state.projects,
+    // 只导出相对种子的差异字段：归类、隐藏、以及手动新增的文档
+    docs: state.docs.map(d=>({id:d.id, name:d.name, type:d.type, date:d.date, url:d.url, pid:d.pid, hidden:!!d.hidden})),
+    theme: state.theme
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "企微文档索引-状态-" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("状态已导出 · 把这个文件发给笔记侠即可同步");
+};
+document.getElementById("btnImport").onclick = ()=>{
+  document.getElementById("importFile").click();
+};
+document.getElementById("importFile").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    try{
+      const data = JSON.parse(rd.result);
+      if(!data.projects || !data.docs) throw new Error("格式不对");
+      state.projects = data.projects;
+      // 按 url 合并文档状态（种子里的 id 可能和导出时不一致，url 才是稳定键）
+      const byUrl = {};
+      data.docs.forEach(d=>{ if(d.url) byUrl[d.url] = d; });
+      const known = new Set(state.docs.map(d=>d.url));
+      state.docs.forEach(d=>{
+        const m = byUrl[d.url];
+        if(m){ d.pid = m.pid; d.hidden = !!m.hidden; }
+      });
+      data.docs.forEach(d=>{
+        if(d.url && !known.has(d.url)) state.docs.push(d);
+      });
+      if(data.theme) state.theme = data.theme;
+      if(data.lastSync) state.lastSync = data.lastSync;
+      save(); renderAll();
+      toast("导入成功 · 分类与项目已恢复");
+    }catch(err){
+      toast("导入失败：" + err.message);
+    }
+    e.target.value = "";
+  };
+  rd.readAsText(f);
+});
 
 document.getElementById("btnAddDoc").onclick = ()=>{
   const opts = state.projects.map(p=>`<option value="${p.id}">${esc(p.title)}</option>`).join("");
