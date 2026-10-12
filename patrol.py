@@ -7,7 +7,13 @@ import json, os, subprocess, sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(BASE, "data.json")
-CREATOR = "wokSFfCgAAuljY1JMO4dg5NUwzJhDB_w"  # 授权人 yasminwu
+def _creator():
+    cfg = os.path.join(BASE, "config.json")
+    if os.path.exists(cfg):
+        try: return json.load(open(cfg, encoding="utf-8")).get("creator_userid", "")
+        except Exception: pass
+    return ""
+CREATOR = _creator()  # 由 config.json 注入，setup 流程生成
 
 KEYWORDS = ["周报","意图","评测","还款","免审","GEO","方案","分析","知识库","Agent",
             "客服","设计","名单","skill","Skill","数据","运营","规则","人群","看板",
@@ -35,6 +41,9 @@ def search(kw, created_after=None):
 
 def main():
     from datetime import datetime
+    if not CREATOR:
+        print(json.dumps({"error": "config.json 缺少 creator_userid，请先运行 setup"}, ensure_ascii=False))
+        sys.exit(1)
     meta_path = os.path.join(BASE, "patrol_meta.json")
     last_run = None
     if os.path.exists(meta_path):

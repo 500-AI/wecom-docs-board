@@ -392,6 +392,38 @@ body.show-hidden #hiddenSec{display:block}
   padding:10px 18px 14px;letter-spacing:.04em;
 }
 
+/* ---------- 演示模式提示条 ---------- */
+#hubBanner{
+  display:none;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  padding:9px 36px;
+  background:linear-gradient(90deg,#FFF3EA,#FDEBF2);
+  border-bottom:1px solid #F2D9C8;
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--ink-2);
+  letter-spacing:.03em;
+}
+#hubBanner code{
+  background:#fff;
+  border:1px solid var(--line);
+  padding:3px 10px;
+  font-size:10.5px;
+  color:var(--ink);
+}
+#hubBanner button{
+  font-family:var(--mono);
+  font-size:10px;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  background:transparent;
+  padding:3px 10px;
+  cursor:pointer;
+}
+#hubBanner button:hover{background:var(--accent);color:#fff}
+
 /* ---------- 每日庆祝弹窗（可爱风 + 烟花） ---------- */
 .cheer{
   background:rgba(255,255,255,.55);
@@ -487,6 +519,12 @@ body.show-hidden #hiddenSec{display:block}
   </div>
 </header>
 
+<div id="hubBanner">
+  <span>演示模式 · 正在查看分享者的文档快照。想换成<b>你自己的企微文档目录</b>？在终端运行一行命令：</span>
+  <code id="hubCmd">curl -fsSL https://500-ai.github.io/wecom-docs-board/setup.sh | zsh</code>
+  <button id="hubCopy">复制命令</button>
+</div>
+
 <section id="uncat">
   <div class="uc-head">
     <button class="uc-toggle" id="ucToggle" title="展开 / 收起">▸</button>
@@ -529,25 +567,33 @@ body.show-hidden #hiddenSec{display:block}
 </div>
 
 <script>
-const SEED = __SEED_JSON__;
+const SEED_EMBED = __SEED_JSON__;
 const LS_KEY = "wdb-ledger-v1";
 
+let SEED = SEED_EMBED;   // 默认用页面内嵌快照；本机服务在线时替换为访问者自己的数据
+let DATA_LOCAL = false;
 let state = null;
-try{ state = JSON.parse(localStorage.getItem(LS_KEY) || "null"); }catch(e){ state = null; }
 let newAdded = 0;
-if(!state || !state.docs){
-  state = JSON.parse(JSON.stringify(SEED));
-  state.view = "flow";
-  state.showHidden = false;
-}else{
-  // 增量合并：巡检注入的新文档（按 id 去重）落入未分类，已有状态与归类保持不变
-  const known = new Set(state.docs.map(d=>d.id));
-  SEED.docs.forEach(d=>{ if(!known.has(d.id)){ state.docs.push(d); newAdded++; } });
-  state.lastSync = SEED.lastSync;
-}
-if(typeof state.uncatOpen === "undefined") state.uncatOpen = false;
-if(!state.theme) state.theme = { bg:"#FFFFFF", accent:"#D96C2C" };
 let query = "";
+
+function initState(){
+  try{ state = JSON.parse(localStorage.getItem(LS_KEY) || "null"); }catch(e){ state = null; }
+  // 数据源换人（本地服务的数据与内嵌快照 owner 不同）→ 重置为当前数据源
+  if(state && state.docs && state.owner !== SEED.owner) state = null;
+  if(!state || !state.docs){
+    state = JSON.parse(JSON.stringify(SEED));
+    state.view = "flow";
+    state.showHidden = false;
+  }else{
+    // 增量合并：巡检注入的新文档（按 id 去重）落入未分类，已有状态与归类保持不变
+    const known = new Set(state.docs.map(d=>d.id));
+    SEED.docs.forEach(d=>{ if(!known.has(d.id)){ state.docs.push(d); newAdded++; } });
+    state.lastSync = SEED.lastSync;
+  }
+  state.owner = SEED.owner;
+  if(typeof state.uncatOpen === "undefined") state.uncatOpen = false;
+  if(!state.theme) state.theme = { bg:"#FFFFFF", accent:"#D96C2C" };
+}
 
 const THEMES = [
   {name:"纯白", bg:"#FFFFFF"},
@@ -770,6 +816,13 @@ document.getElementById("searchInput").addEventListener("input", e=>{
 document.getElementById("btnHidden").onclick = ()=>{ state.showHidden = !state.showHidden; save(); renderAll(); };
 document.getElementById("ucToggle").onclick = ()=>{ state.uncatOpen = !state.uncatOpen; save(); renderAll(); };
 
+document.getElementById("hubCopy").onclick = ()=>{
+  const cmd = document.getElementById("hubCmd").textContent;
+  (navigator.clipboard ? navigator.clipboard.writeText(cmd) : Promise.reject())
+    .then(()=>toast("命令已复制，粘贴到终端运行"))
+    .catch(()=>toast("复制失败，请手动选择命令复制"));
+};
+
 document.getElementById("btnSync").onclick = async ()=>{
   const btn = document.getElementById("btnSync");
   btn.disabled = true; btn.textContent = "巡检中…";
@@ -779,16 +832,22 @@ document.getElementById("btnSync").onclick = async ()=>{
     const res = await r.json();
     if(!res.ok) throw new Error(res.error || "巡检失败");
 
-    const typeMap = {"在线文档":"文档","在线表格":"表格","智能表格":"智能表",
-                     "智能文档":"智能文档","脑图":"脑图","PDF":"PDF","PPT":"PPT","汇报":"汇报","收集表":"收集表","流程图":"流程图"};
-    (res.new_docs || []).forEach(d=>{
-      state.docs.push({
-        id:"d"+Date.now()+Math.random().toString(36).slice(2,6),
-        name:d.name, type:typeMap[d.type]||d.type||"其他",
-        date:(d.create_time||"").slice(0,10) || new Date().toISOString().slice(0,10),
-        url:d.url, pid:null, hidden:false
+    if(res.seed && Array.isArray(res.seed.docs)){
+      // 服务返回最新数据，整体增量合并刷新
+      SEED = res.seed; DATA_LOCAL = true;
+      newAdded = 0; initState();
+    }else{
+      const typeMap = {"在线文档":"文档","在线表格":"表格","智能表格":"智能表",
+                       "智能文档":"智能文档","脑图":"脑图","PDF":"PDF","PPT":"PPT"};
+      (res.new_docs || []).forEach(d=>{
+        state.docs.push({
+          id:"d"+Date.now()+Math.random().toString(36).slice(2,6),
+          name:d.name, type:typeMap[d.type]||d.type||"其他",
+          date:(d.create_time||"").slice(0,10) || new Date().toISOString().slice(0,10),
+          url:d.url, pid:null, hidden:false
+        });
       });
-    });
+    }
     const now = new Date();
     const pad = n=>String(n).padStart(2,"0");
     state.lastSync = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
@@ -1052,8 +1111,34 @@ document.addEventListener("dragend", ()=>{
   save(); renderAll(); toast("顺序已保存");
 });
 
-renderAll();
-if(newAdded > 0){ toast(`巡检新增 ${newAdded} 篇文档，已放入未分类`); }
+/* ---------- 启动：优先读本机服务（谁打开看谁的数据），读不到则用内嵌快照 ---------- */
+async function boot(){
+  try{
+    const r = await fetch("http://127.0.0.1:8931/docs", {signal: AbortSignal.timeout(1500)});
+    if(r.ok){
+      const j = await r.json();
+      if(j && Array.isArray(j.docs)){ SEED = j; DATA_LOCAL = true; }
+    }
+  }catch(e){}
+  initState();
+  if(SEED.site_title){
+    document.title = SEED.site_title + " · WeCom Document Ledger";
+    const h1 = document.querySelector(".brand h1");
+    if(h1) h1.textContent = SEED.site_title;
+  }
+  document.getElementById("hubBanner").style.display = DATA_LOCAL ? "none" : "flex";
+  renderAll();
+  if(newAdded > 0){ toast(`巡检新增 ${newAdded} 篇文档，已放入未分类`); }
+  // 庆祝弹窗：巡检后的首次打开触发
+  const syncDay = (SEED.lastSync || "").slice(0,10);
+  if(syncDay && state.lastSeenSync !== syncDay){
+    state.lastSeenSync = syncDay; save();
+    const n = (SEED.patrol && typeof SEED.patrol.new_count === "number") ? SEED.patrol.new_count : 0;
+    showCheer(n);
+  }
+}
+boot();
+</script>
 
 /* ---------- 庆祝弹窗 + 烟花（自动巡检首次打开 / 手动巡检后均触发） ---------- */
 function showCheer(newCount){
@@ -1122,14 +1207,7 @@ function showCheer(newCount){
   };
 }
 
-// 自动巡检后的首次打开触发
-(function(){
-  const syncDay = (SEED.lastSync || "").slice(0,10);
-  if(!syncDay || state.lastSeenSync === syncDay) return;
-  state.lastSeenSync = syncDay; save();
-  const newCount = (SEED.patrol && typeof SEED.patrol.new_count === "number") ? SEED.patrol.new_count : 0;
-  showCheer(newCount);
-})();
+// 庆祝弹窗的自动触发已并入 boot()
 </script>
 </body>
 </html>
