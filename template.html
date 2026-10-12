@@ -1111,22 +1111,44 @@ document.addEventListener("dragend", ()=>{
   save(); renderAll(); toast("顺序已保存");
 });
 
-/* ---------- 启动：优先读本机服务（谁打开看谁的数据），读不到则用内嵌快照 ---------- */
+/* ---------- 启动：优先读本机服务（谁打开看谁的数据）；服务不在线但有本人缓存时用缓存；都没有才用内嵌快照 ---------- */
 async function boot(){
+  let localSeed = null;
   try{
     const r = await fetch("http://127.0.0.1:8931/docs", {signal: AbortSignal.timeout(1500)});
     if(r.ok){
       const j = await r.json();
-      if(j && Array.isArray(j.docs)){ SEED = j; DATA_LOCAL = true; }
+      if(j && Array.isArray(j.docs)) localSeed = j;
     }
   }catch(e){}
+  const cached = (()=>{ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return null; } })();
+  if(localSeed){
+    SEED = localSeed; DATA_LOCAL = true;
+  }else if(cached && cached.docs && cached.owner && cached.owner !== SEED_EMBED.owner){
+    // 本机服务不在线，但本浏览器存有访问者本人的数据 → 用她自己的最近快照，绝不掉回分享者数据
+    SEED = Object.assign({}, SEED_EMBED, {
+      docs: cached.docs, projects: cached.projects,
+      lastSync: cached.lastSync, owner: cached.owner,
+      patrol: {date:(cached.lastSync||"").slice(0,10), new_count:0}
+    });
+    DATA_LOCAL = "stale";
+  }
   initState();
   if(SEED.site_title){
     document.title = SEED.site_title + " · WeCom Document Ledger";
     const h1 = document.querySelector(".brand h1");
     if(h1) h1.textContent = SEED.site_title;
   }
-  document.getElementById("hubBanner").style.display = DATA_LOCAL ? "none" : "flex";
+  const banner = document.getElementById("hubBanner");
+  if(DATA_LOCAL === true){
+    banner.style.display = "none";
+  }else if(DATA_LOCAL === "stale"){
+    banner.style.display = "flex";
+    banner.querySelector("span").innerHTML =
+      "离线快照 · 本地服务未启动，当前是你最近一次巡检的数据。在终端重新运行接入命令即可恢复实时：";
+  }else{
+    banner.style.display = "flex";
+  }
   renderAll();
   if(newAdded > 0){ toast(`巡检新增 ${newAdded} 篇文档，已放入未分类`); }
   // 庆祝弹窗：巡检后的首次打开触发

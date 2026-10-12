@@ -59,6 +59,38 @@ cd "$DIR" && "$PY" patrol.py
 # 6. 启动本地数据服务
 pkill -f patrol_server.py 2>/dev/null || true
 nohup "$PY" "$DIR/patrol_server.py" >> /tmp/wecom-docs-ledger.log 2>&1 &
+
+# 7. 注册 launchd：服务开机自启 + 每日 22:00 自动巡检（不依赖任何工具在线）
+UID_NUM=$(id -u)
+SP=~/Library/LaunchAgents/com.docs-ledger.server.plist
+PP=~/Library/LaunchAgents/com.docs-ledger.patrol.plist
+cat > "$SP" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.docs-ledger.server</string>
+  <key>ProgramArguments</key><array><string>$PY</string><string>$DIR/patrol_server.py</string></array>
+  <key>RunAtLoad</key><true/><key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/tmp/wecom-docs-ledger.log</string>
+  <key>StandardErrorPath</key><string>/tmp/wecom-docs-ledger.log</string>
+</dict></plist>
+EOF
+cat > "$PP" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.docs-ledger.patrol</string>
+  <key>ProgramArguments</key><array><string>$PY</string><string>$DIR/patrol.py</string></array>
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>22</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>/tmp/wecom-docs-ledger.log</string>
+  <key>StandardErrorPath</key><string>/tmp/wecom-docs-ledger.log</string>
+</dict></plist>
+EOF
+launchctl bootstrap gui/$UID_NUM "$SP" 2>/dev/null && echo "已注册：服务开机自启" \
+  || echo "提示：服务自启注册失败，重启电脑后需重新运行本命令"
+launchctl bootstrap gui/$UID_NUM "$PP" 2>/dev/null && echo "已注册：每日 22:00 自动巡检" \
+  || echo "提示：每日巡检注册失败，可手动点页面「巡检更新」"
+
 sleep 1
 if curl -s http://127.0.0.1:8931/health >/dev/null; then
   echo "------------------------------"
